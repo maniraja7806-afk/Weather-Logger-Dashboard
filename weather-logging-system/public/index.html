@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard Analytics</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat { font-size: 2em; font-weight: bold; color: #4CAF50; }
+        .live-badge { background: #ff3b30; padding: 5px 10px; border-radius: 5px; font-size: 0.8em; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Weather Analytics System</h2>
+            <span class="live-badge">Live Updates Active</span>
+        </div>
+        
+        <div class="card">
+            <h3>Recent Metrics</h3>
+            <div class="grid" id="metrics-grid">Loading data...</div>
+        </div>
+
+        <div class="card">
+            <h3>System Status</h3>
+            <p>Backend: API active, Sockets listening, MongoDB Aggregation indexing active.</p>
+            <p>Access endpoints via /api/weather/historical and /api/weather/analytics</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => console.log('Live connected!'));
+        
+        fetch('/api/weather/analytics')
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('metrics-grid');
+                grid.innerHTML = data.map(d => `
+                    <div class="card" style="background:#2a2a2a">
+                        <h4>${d._id}</h4>
+                        <div class="stat">${d.avgTemp.toFixed(1)}°C avg</div>
+                        <div>Max: ${d.maxTemp}°C | Min: ${d.minTemp}°C</div>
+                    </div>
+                `).join('');
+            }).catch(console.error);
+    </script>
+</body>
+</html>

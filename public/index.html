@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Logger Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light pt-4">
+
+<div class="container">
+    <h2 class="mb-4 text-center">Weather Logger Dashboard</h2>
+    
+    <div class="row">
+        <!-- Controls Column -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Controls</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Location</label>
+                        <input type="text" id="location" class="form-control" placeholder="e.g. London">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Start Date</label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">End Date</label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="loadHistory()">Filter History</button>
+                        <button class="btn btn-outline-primary" onclick="getAverage()">Calculate Average Temp</button>
+                        <a href="/api/weather/export" class="btn btn-secondary" target="_blank">Export All Data (JSON)</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Result Area -->
+            <div id="avgResult" class="alert alert-info mt-3" style="display: none;"></div>
+        </div>
+
+        <!-- Data Column -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Historical Data</h5>
+                    <span id="recordCount" class="badge bg-secondary">0 records</span>
+                </div>
+                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Location</th>
+                                <th>Temp (°C)</th>
+                                <th>Humidity (%)</th>
+                                <th>Condition</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Data will be populated here -->
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Loading data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadHistory() {
+        const locationStr = document.getElementById('location').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        // Build the URL with query params
+        const params = new URLSearchParams();
+        if (locationStr) params.append('location', locationStr);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+
+        let url = `/api/weather/history?${params.toString()}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            const tbody = document.getElementById('historyTableBody');
+            const countBadge = document.getElementById('recordCount');
+            
+            tbody.innerHTML = '';
+            countBadge.innerText = `${data.length || 0} records`;
+            
+            if (!data || data.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No records found.</td></tr>';
+                 return;
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold">${item.location}</td>
+                    <td>${item.temperature.toFixed(1)}</td>
+                    <td>${item.humidity || 'N/A'}</td>
+                    <td class="text-capitalize">${item.description || 'N/A'}</td>
+                    <td>${new Date(item.timestamp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            alert('Failed to load history data.');
+        }
+    }
+
+    async function getAverage() {
+        const locationStr = document.getElementById('location').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        if (!locationStr) {
+            alert('Please specify a Location to calculate the average temperature.');
+            return;
+        }
+
+        const params = new URLSearchParams({ location: locationStr });
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+
+        let url = `/api/weather/average?${params.toString()}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            const avgResultBox = document.getElementById('avgResult');
+            avgResultBox.style.display = 'block';
+
+            if (response.ok) {
+                avgResultBox.className = 'alert alert-info mt-3';
+                avgResultBox.innerHTML = `
+                    <h5 class="alert-heading text-capitalize">${data.location}</h5>
+                    <hr>
+                    <p class="mb-0 fw-bold">Average Temp: ${data.averageTemp}°C</p>
+                    <small>Based on ${data.recordsCount} total records.</small>
+                `;
+            } else {
+                avgResultBox.className = 'alert alert-warning mt-3';
+                avgResultBox.innerText = data.message || data.error || 'No records found.';
+            }
+        } catch (error) {
+            console.error('Error fetching average:', error);
+            alert('Failed to calculate average temperature.');
+        }
+    }
+
+    // Automatically load data when the page opens
+    window.onload = loadHistory;
+</script>
+</body>
+</html>
