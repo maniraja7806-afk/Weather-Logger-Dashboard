@@ -1,52 +1,94 @@
-# SmartTask Manager
-A Modern Smart Task Manager (Premium UI) full-stack web application built with the MERN stack (MongoDB, Express, React, Node.js) and Tailwind CSS.
+# Node.js Backend API Project
+
+This is a comprehensive Node.js backend application containing an E-commerce API (including authentication, products, categories, and shopping cart functionality) alongside a background Weather Logging Service. It uses Express.js and MongoDB.
 
 ## Features
-- **User Authentication:** Secure JWT-based registration and login system.
-- **Task Management:** Create, Read, Update, and Delete (CRUD) tasks.
-- **Kanban Board:** Drag and drop tasks across different statuses (Pending, In Progress, Completed).
-- **Analytics Dashboard:** Visual charts (using Recharts) to track task distribution by priority and status.
-- **Smart Prioritization:** Mock AI priority suggestion for new tasks.
-- **Responsive UI:** Premium UI design built with Tailwind CSS.
+
+- **User Authentication**: Secure JWT-based registration and login system.
+- **Product & Category Management**: APIs to view, add, and manage e-commerce products and categories.
+- **Shopping Cart**: APIs to manage user shopping carts.
+- **Weather Logging System**: Automated cron jobs pulling and logging weather data in the background.
+
+## Technology Stack
+
+- **Node.js**: JavaScript Runtime
+- **Express.js**: Web Framework
+- **MongoDB** & **Mongoose**: Database and ODM
+- **JWT** (JSON Web Tokens): Authentication
+- **Bcrypt.js**: Password hashing
+- **Node-Cron**: Background job scheduler
+
+---
 
 ## Prerequisites
-Before running the project, make sure you have the following installed:
-- [Node.js](https://nodejs.org/)
-- [MongoDB](https://www.mongodb.com/try/download/community) (Running locally on default port `27017`)
 
-## Installation & Running Locally
+- [Node.js](https://nodejs.org/en/) installed (v14 or higher recommended)
+- [MongoDB](https://www.mongodb.com/) instance (Local or Atlas)
+- Git (for cloning the repository)
+
+---
+
+## Installation
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/maniraja7806-afk/Smart-Task.git
-   cd Smart-Task
+   git clone <your-repository-url>
+   cd <repository-folder>
    ```
 
-2. **Start the Backend Server:**
-   Open a terminal and navigate to the backend folder:
+2. **Install dependencies:**
    ```bash
-   cd backend
    npm install
-   npm run dev
    ```
-   > The backend runs on `http://localhost:5001`.
 
-3. **Start the Frontend Development Server:**
-   Open a separate terminal and navigate to the frontend folder:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
+3. **Environment Variables Config:**
+   Create a `.env` file in the root directory and add the necessary environment variables. Example:
+   ```env
+   NODE_ENV=development
+   PORT=5000
+   MONGO_URI=mongodb://localhost:27017/your_database_name
+   JWT_SECRET=your_super_secret_jwt_key
+   # Weather API Key if applicable for external weather services
+   WEATHER_API_KEY=your_weather_api_key
    ```
-   > The frontend runs on `http://localhost:5173`.
 
-4. **Open in Browser:**
-   Go to `http://localhost:5173` to view the application.
+---
 
-## Deployment Notes
-Since this is a Full-Stack application (MERN), it **cannot** be hosted solely on purely static providers like GitHub Pages because it requires a Node.js backend and a MongoDB database. 
+## Running the Application
 
-To deploy it live on the internet, you can use:
-* **Frontend:** Vercel or Netlify
-* **Backend:** Render or Heroku
-* **Database:** MongoDB Atlas (Cloud database)
+There are dual entry points in this system depending on the service you want to run. 
+
+**Option 1: Run the Weather API / Default NPM Script**
+The `package.json` is currently pointing its start scripts to the weather app (`src/app.js`).
+```bash
+# Start the server (runs src/app.js)
+npm start
+
+# Or using the dev script
+npm run dev
+```
+
+**Option 2: Run the E-commerce API**
+To run the primary E-commerce API entry point:
+```bash
+node server.js
+```
+
+---
+
+## API Endpoints Overview
+
+### E-commerce Endpoints (Port 5000 by default):
+- **Auth/Users**: `/api/users`
+- **Products**: `/api/products`
+- **Categories**: `/api/categories`
+- **Cart**: `/api/cart`
+
+### Weather API Endpoints (via `src/app.js`):
+- **Weather Services**: `/api/weather`
+
+---
+
+## License
+
+This project is licensed under the [ISC License](LICENSE).
